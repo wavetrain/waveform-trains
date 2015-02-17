@@ -1,0 +1,90 @@
+\documentclass[10pt,twocolumn]{article}
+% amsmath package, useful for mathematical formulas
+\usepackage{amsmath}
+% amssymb package, useful for mathematical symbols
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{relsize}
+\usepackage{fullpage}
+\usepackage{natbib}
+\newcommand{\T}{{\sf T}}
+\setlength{\parskip}{6pt}
+\setlength{\parindent}{0pt}
+\newcommand{\E}[1]{\mathbb E\left[ #1\right]}
+\newcommand{\R}{\mathbb R}
+\newcommand{\N}{\mathbb N}
+\newcommand*\diff{\mathop{}\!\mathrm{d}}
+\DeclareMathOperator{\var}{var}
+
+\title{Wave train decomposition}
+\author{Dimitri Yatsenko}
+\begin{document}
+\maketitle
+This writeup contains an improved algorithm to replace the 2007 version. 
+
+\section*{Formulation}
+Let $x(t)\in \R^N$ with $t = 1,\ldots,T$ denote a short (usually 0.5--10 s) epoch of a discretized $N$-channel EEG recording.
+
+We aim to decompose $x(t)$ into a sum of $K$ trains of identical short $N$-channel waveforms $w_k(\tau)\in \R^N$ defined on the interval $-d \le \tau \le +d$:
+\begin{equation}
+\begin{split}
+x(t) = & 
+\sum\limits_{k=1}^K \sum_{\tau=-d}^{+d} u_k(t-\tau)w_k(\tau) + \varepsilon(t)
+\\
+\equiv &
+\sum\limits_{k=1}^K \sum_{t^\prime=t-d}^{t+d} u_k(t^\prime)w_k(t^\prime-t) + \varepsilon(t)
+\\
+\equiv &
+\sum\limits_{k=1}^K (u_k*w_k)(t) + \varepsilon(t)
+\end{split}
+\end{equation}
+where $u_k(t)\in \{0,1\}$ is the occurrence indicator function comprising 1s at time points when $k$th waveform occurs in the recording and 0s otherwise; the operator $*$ denotes convolution.
+
+\section*{Algorithm}
+The algorithm is initiated by assigning random uniformly distributed numbers from $[0,1]$ to the occurrence function $u_k(t)$. 
+Until the algorithm converges, the occurrence function is allowed to assume fractional values between 0 and 1.
+We define the loss function with a penalty term for the nonbinarity of $u_k(t)$:
+\begin{equation}
+\mathcal L = 
+\sum\limits_{t=1}^T \|\varepsilon(t)\|^2 
++ \lambda\sum\limits_{t=1}^T \sum\limits_{k=1}^K (u_k(t)-u_k^2(t)) 
+\end{equation}
+
+The gradient of the loss function with respect to the waveform coefficients is 
+\begin{equation}
+\begin{split}
+\frac{\partial \mathcal L}{\partial w_k(\tau)} 
+= & -2\sum\limits_{t=1}^T \varepsilon(t) u_k(t-\tau)
+\\
+\equiv & -2 (\varepsilon\star u_k)(\tau)
+\end{split}
+\end{equation}
+where $\star$ denotes correlation.
+
+Similarly, the gradient with respect to the occurrence indicator function is
+\begin{equation}
+\begin{split}
+\frac{\partial \mathcal L}{\partial u_k(t)} 
+= & 
+-2 \sum\limits_{t^\prime=1}^T \varepsilon(t^\prime) w_k(t-t^\prime) 
++ 2\lambda(1-2u_k(t))
+\\
+= &
+-2 (\varepsilon*w_k)(t) 
++ 2\lambda(1-2u_k(t))
+\end{split}
+\end{equation}
+
+These gradients provide the update rules for gradient descent: 
+\begin{align}
+\Delta w_k(\tau) &= \gamma\cdot(\varepsilon \star u_k)(\tau)
+\\
+\Delta u_k(t) &= \gamma\left[(\varepsilon * w_k)(t)
+- \lambda (1-2u_k(t))\right]
+\end{align}
+with bounded $u_k(t)\in [0,1]$.
+The update coefficients $\gamma$ decreases with the convergence of the algorithm while the nonbinarity penalty coefficient $\lambda$  increases.
+
+
+\end{document}
