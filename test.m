@@ -48,8 +48,9 @@ for i=floor(epochStep/2)+round(startTime*fs):epochStep:size(signal,2)-epoch
     xlabel 'time (s)'
     
     hold on
-    for iTrain = 1:length(trains)
+    for iTrain = 1:length(trains)        
         w = size(trains(iTrain).waveform,2);
+        trains(iTrain).waveform(trains(iTrain).waveform == 0)=nan;  % suppress plotting
         ix = floor(margin/2)-floor(w/2)+(0:w-1);
         for iWave = 1:length(trains(iTrain).idx)
             plot(t(i+ix+trains(iTrain).idx(iWave)), bsxfun(@plus, trains(iTrain).waveform', yticks),...
