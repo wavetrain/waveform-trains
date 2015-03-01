@@ -35,11 +35,12 @@ epoch = 1800;
 epochStep = 1000;
 margin = 200;
 widths = [7 25 41 71 91];  % widths of waveforms to look at each iteration
-ntrains = 3;
+ntrains = 6;
 colors = hsv(ntrains);
 
 for i=floor(epochStep/2)+round(startTime*fs):epochStep:size(signal,2)-epoch
     segment = signal(:,i+(1:epoch));
+    [u,w] = choo(segment',ntrains,widths(end));
     trains = processSegment(segment, ntrains, widths, margin);
 
     % plot results

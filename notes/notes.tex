@@ -39,16 +39,15 @@ x(t) = &
 \sum\limits_{k=1}^K (u_k*w_k)(t) + \varepsilon(t)
 \end{split}
 \end{equation}
-where $u_k(t)\in \{0,1\}$ is the occurrence indicator function comprising 1s at time points when $k$th waveform occurs in the recording and 0s otherwise; the operator $*$ denotes convolution.
+where $u_k(t)\in \{0,1\}$ is the occurrence indicator function comprising 1s at the time points when an instance of the $k$th waveform occurs in the recording and 0s otherwise; the operator $*$ denotes convolution.
 
 \section*{Algorithm}
-The algorithm is initiated by assigning random uniformly distributed numbers from $[0,1]$ to the occurrence function $u_k(t)$. 
 Until the algorithm converges, the occurrence function is allowed to assume fractional values between 0 and 1.
 We define the loss function with a penalty term for the nonbinarity of $u_k(t)$:
 \begin{equation}
 \mathcal L = 
-\sum\limits_{t=1}^T \|\varepsilon(t)\|^2 
-+ \lambda\sum\limits_{t=1}^T \sum\limits_{k=1}^K (u_k(t)-u_k^2(t)) 
+\sum\limits_{t=1}^T\left(\|\varepsilon(t)\|^2 
++ \lambda \sum\limits_{k=1}^K \left[u_k(t)-u_k^2(t)\right]\right) 
 \end{equation}
 
 The gradient of the loss function with respect to the waveform coefficients is 
