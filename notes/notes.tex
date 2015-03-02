@@ -49,7 +49,7 @@ We define the loss function with a penalty term for the nonbinarity of $u_k(t)$:
 \begin{equation}
 \mathcal L = 
 \sum\limits_{t=1}^T\left(\|\varepsilon(t)\|^2 
-+ \lambda \sum\limits_{k=1}^K \left[u_k(t)-u_k^2(t)\right]\right) 
++ \lambda \sum\limits_{k=1}^K \left(0.5-u_k(t)\right)^2\right) 
 \end{equation}
 
 The gradient of the loss function with respect to the waveform coefficients is 
@@ -69,11 +69,11 @@ Similarly, the gradient with respect to the occurrence indicator function is
 \frac{\partial \mathcal L}{\partial u_k(t)} 
 = & 
 -2 \sum\limits_{t^\prime=1}^T \varepsilon(t^\prime) w_k(t-t^\prime) 
-+ 2\lambda(1-2u_k(t))
++ 2\lambda(0.5-u_k(t))
 \\
 = &
 -2 (\varepsilon*w_k)(t) 
-+ 2\lambda(1-2u_k(t))
++ 2\lambda(0.5-u_k(t))
 \end{split}
 \end{equation}
 
