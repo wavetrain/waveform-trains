@@ -5,34 +5,34 @@ x0 = [zeros((d-1)/2,n); x; zeros((d-1)/2,n)];
 
 u = zeros(T,K);    % occurrence function
 w = zeros(d,n,K);  % waveform
-q = 2;
-for iter = 1:80
+q = 1;
+for iter = 1:100
     fprintf .
-    lambda = 0; %max(0,iter-20)/60;
+    lambda = iter/100;
     
     for k=1:min(ceil(iter/3),K)   % introduce additional trains gradually
         err = x0 - reconstruct(u,w);    % residual
         
         % update waveform
         L = loss(err);
-        if all(all(w(:,:,k)==0)) 
+        if all(all(w(:,:,k)==0)) || all(u(:,k)==0)
             % initialize waveform with the largest peak in the error
-            [~,ix] = max(sum(conv2(err((d-1)/2+(1:T),:).^2,hamming(ceil(d/8)*2+1)),2));
-            w(:,:,k) = bsxfun(@times,flipud(err(ix+(1:d),:)),gausswin(d,6));
+            [~,ix] = max(sum(conv2(err.^2,hamming(ceil(d/10)*2+1),'same'),2));
+            w(:,:,k) = bsxfun(@times,flipud(err(ix+(1:d)-(d-1)/2,:)),gausswin(d,6));
             u(:,k) = 0;
         else
-            dw = 0.7*bsxfun(@times,conv2(err,flipud(u(:,k).^q)/sum(u(:,k).^q),'valid'),gausswin(d));
+            dw = 0.7*bsxfun(@times,conv2(err,flipud(u(:,k).^q)/sum(u(:,k).^q),'valid'),gausswin(d,1.5));
             while loss(err-reconstruct(u(:,k),dw))>L
                 dw = 0.7*dw;
             end
-            dw = 0.7*dw;  % be conservative
+            dw = 0.7*dw;  % conservative step
             w(:,:,k) = w(:,:,k) + dw;
             err = err - reconstruct(u(:,k),dw);   % update error
         end
         
         % update occurrence function
         L = loss(err,u,w,lambda);
-        du = conv2(err,fliplr(w(:,:,k))/sq(w(:,:,k)),'valid') + lambda*(u(:,k)-0.3);
+        du = conv2(err,fliplr(w(:,:,k))/sq(w(:,:,k)),'valid') + lambda*sign(u(:,k)-0.3)/2;
         if all(u(:,k)==0)
             % initialize sparsely
             du(setdiff(1:T,spaced_max(clamp(du),0.4*d,0.1)))=0;
@@ -59,7 +59,7 @@ function L = loss(err,u,w,lambda)
 L = sq(err);
 if nargin==3 && lambda > 0
     for k=1:size(u,2)
-        L = L - lambda*sq(w(:,:,k))*sq(u(:,k)-0.3);
+        L = L - lambda*sq(w(:,:,k))*sum(abs(u(:,k)-0.3));
     end
 end
 end

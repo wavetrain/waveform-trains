@@ -35,10 +35,10 @@ epoch = 1800;
 epochStep = 1000;
 margin = 200;
 widths = [7 25 41 71 91];  % widths of waveforms to look at each iteration
-ntrains = 6;
+ntrains = 4;
 colors = hsv(ntrains);
 
-useNewAlgorithm = true;
+useNewAlgorithm = false;
 
 for i=floor(epochStep/2)+round(startTime*fs):epochStep:size(signal,2)-epoch
     segment = signal(:,i+(1:epoch));
