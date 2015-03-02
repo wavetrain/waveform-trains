@@ -30,7 +30,7 @@ xlabel 'time (s)'
 
 
 % algorithm paramaters (all units are in samples)
-startTime = 290; % (s)
+startTime = 300; % (s)
 epoch = 1800;  
 epochStep = 1000;
 margin = 200;

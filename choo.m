@@ -7,39 +7,44 @@ u = zeros(T,K);    % occurrence function
 w = zeros(d,n,K);  % waveform
 q = 2;
 for iter = 1:80
+    fprintf .
+    lambda = 0; %max(0,iter-20)/60;
     
     for k=1:min(ceil(iter/3),K)   % introduce additional trains gradually
         err = x0 - reconstruct(u,w);    % residual
-        L = sum(sum(err.^2));
         
-        if all(all(w(:,:,k)==0))
+        % update waveform
+        L = loss(err);
+        if all(all(w(:,:,k)==0)) 
             % initialize waveform with the largest peak in the error
-            [~,ix] = max(sum(conv2(err((d-1)/2+(1:T),:).^2,hamming(ceil(d/10)*2+1)),2));
+            [~,ix] = max(sum(conv2(err((d-1)/2+(1:T),:).^2,hamming(ceil(d/8)*2+1)),2));
             w(:,:,k) = bsxfun(@times,flipud(err(ix+(1:d),:)),gausswin(d,6));
+            u(:,k) = 0;
         else
-            % update waveform
             dw = 0.7*bsxfun(@times,conv2(err,flipud(u(:,k).^q)/sum(u(:,k).^q),'valid'),gausswin(d));
-            while sum(sum((err - reconstruct(u(:,k),dw)).^2))>L
+            while loss(err-reconstruct(u(:,k),dw))>L
                 dw = 0.7*dw;
             end
             dw = 0.7*dw;  % be conservative
-            w(:,:,k) = w(:,:,k) + dw;  
+            w(:,:,k) = w(:,:,k) + dw;
             err = err - reconstruct(u(:,k),dw);   % update error
-            L = sum(sum(err.^2));
         end
         
         % update occurrence function
-        du = conv2(err,fliplr(w(:,:,k))/sum(sum(w(:,:,k).^2)),'valid');
+        L = loss(err,u,w,lambda);
+        du = conv2(err,fliplr(w(:,:,k))/sq(w(:,:,k)),'valid') + lambda*(u(:,k)-0.3);
         if all(u(:,k)==0)
             % initialize sparsely
             du(setdiff(1:T,spaced_max(clamp(du),0.4*d,0.1)))=0;
-        end            
-        while sum(sum((err - reconstruct(clamp(u(:,k)+du)-u(:,k),w(:,:,k))).^2))>L
+        end
+        while loss(err - reconstruct(clamp(u(:,k)+du)-u(:,k),w(:,:,k)),u,w,lambda)>L
             du = 0.5*du;
-        end        
-        u(:,k) = clamp(u(:,k) + 0.7*du);  
+        end
+        u(:,k) = clamp(u(:,k) + 0.7*du);
+        
     end
 end
+fprintf \n
 
 % plot resulting waveforms
 subplot 211
@@ -50,10 +55,18 @@ plot(bsxfun(@plus,u,1:K))
 end
 
 
-function L = loss(err,u,lambda)
-L = sum(err.^2 + lambda*sum((.3-u).^2,2));
+function L = loss(err,u,w,lambda)
+L = sq(err);
+if nargin==3 && lambda > 0
+    for k=1:size(u,2)
+        L = L - lambda*sq(w(:,:,k))*sq(u(:,k)-0.3);
+    end
+end
 end
 
+function s = sq(x)
+s = x(:)'*x(:);
+end
 
 function x = clamp(x)
 x = max(0,min(1,x));

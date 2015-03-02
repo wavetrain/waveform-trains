@@ -49,7 +49,7 @@ We define the loss function with a penalty term for the nonbinarity of $u_k(t)$:
 \begin{equation}
 \mathcal L = 
 \sum\limits_{t=1}^T\left(\|\varepsilon(t)\|^2 
-+ \lambda \sum\limits_{k=1}^K \left(0.5-u_k(t)\right)^2\right) 
+- \lambda \sum\limits_{k=1}^K (u_k(t)-0.5)^2\right) 
 \end{equation}
 
 The gradient of the loss function with respect to the waveform coefficients is 
@@ -69,23 +69,23 @@ Similarly, the gradient with respect to the occurrence indicator function is
 \frac{\partial \mathcal L}{\partial u_k(t)} 
 = & 
 -2 \sum\limits_{t^\prime=1}^T \varepsilon(t^\prime) w_k(t-t^\prime) 
-+ 2\lambda(0.5-u_k(t))
+- 2\lambda(u_k(t)-0.5)
 \\
 = &
 -2 (\varepsilon*w_k)(t) 
-+ 2\lambda(0.5-u_k(t))
++ 2\lambda(u_k(t)-0.5)
 \end{split}
 \end{equation}
 
 These gradients provide the update rules for gradient descent: 
 \begin{align}
-\Delta w_k(\tau) &= \gamma\cdot(\varepsilon \star u_k)(\tau)
+\Delta w_k(\tau) &= \gamma(\varepsilon \star u_k)(\tau)
 \\
 \Delta u_k(t) &= \gamma\left[(\varepsilon * w_k)(t)
-- \lambda (1-2u_k(t))\right]
++ \lambda (u_k(t)-0.5)\right]
 \end{align}
 with bounded $u_k(t)\in [0,1]$.
-The update coefficients $\gamma$ decreases with the convergence of the algorithm while the nonbinarity penalty coefficient $\lambda$  increases.
+The update coefficients $\gamma$ are determined by line search; the nonbinarity penalty coefficient $\lambda$  increases with increasing iterations.
 
 \bibliographystyle{plain}
 \bibliography{SpikeSorting}
