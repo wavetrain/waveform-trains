@@ -7,7 +7,7 @@
 \usepackage{amsmath}
 \usepackage{relsize}
 \usepackage{fullpage}
-\usepackage{natbib}
+%\usepackage{natbib}
 \newcommand{\T}{{\sf T}}
 \setlength{\parskip}{6pt}
 \setlength{\parindent}{0pt}
@@ -40,6 +40,8 @@ x(t) = &
 \end{split}
 \end{equation}
 where $u_k(t)\in \{0,1\}$ is the occurrence indicator function comprising 1s at the time points when an instance of the $k$th waveform occurs in the recording and 0s otherwise; the operator $*$ denotes convolution.
+
+This formulation resembles the \emph{spike sorting} problem for detecting action potentials in multielectrode recordings and assigning them to individual neurons \cite{pillow_model-based_2013}.
 
 \section*{Algorithm}
 Until the algorithm converges, the occurrence function is allowed to assume fractional values between 0 and 1.
@@ -85,5 +87,7 @@ These gradients provide the update rules for gradient descent:
 with bounded $u_k(t)\in [0,1]$.
 The update coefficients $\gamma$ decreases with the convergence of the algorithm while the nonbinarity penalty coefficient $\lambda$  increases.
 
+\bibliographystyle{plain}
+\bibliography{SpikeSorting}
 
 \end{document}

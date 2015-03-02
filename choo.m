@@ -3,11 +3,8 @@ assert(mod(d,2)==1,'width must be odd')
 [T,n] = size(x);  % T = # time samples, n = #channels
 x0 = [zeros((d-1)/2,n); x; zeros((d-1)/2,n)];
 
-% initialize random occurrence functions
-%u = bsxfun(@times,rand(T,K), sum(abs(x),2));
-%u = u/max(u(:));
-u = zeros(T,K);
-w = zeros(d,n,K);
+u = zeros(T,K);    % occurrence function
+w = zeros(d,n,K);  % waveform
 q = 2;
 for iter = 1:80
     
@@ -17,7 +14,7 @@ for iter = 1:80
         
         if all(all(w(:,:,k)==0))
             % initialize waveform with the largest peak in the error
-            [~,ix] = max(sum(err((d-1)/2+(1:T),:).^2,2));
+            [~,ix] = max(sum(conv2(err((d-1)/2+(1:T),:).^2,hamming(ceil(d/10)*2+1)),2));
             w(:,:,k) = bsxfun(@times,flipud(err(ix+(1:d),:)),gausswin(d,6));
         else
             % update waveform
@@ -38,16 +35,23 @@ for iter = 1:80
             du(setdiff(1:T,spaced_max(clamp(du),0.4*d,0.1)))=0;
         end            
         while sum(sum((err - reconstruct(clamp(u(:,k)+du)-u(:,k),w(:,:,k))).^2))>L
-            du = 0.7*du;
+            du = 0.5*du;
         end        
         u(:,k) = clamp(u(:,k) + 0.7*du);  
     end
 end
+
+% plot resulting waveforms
+subplot 211
+plot(bsxfun(@plus,reshape(cat(1,w,nan(size(w))),[],K)/max(abs(w(:))),1:K))
+
+subplot 212
+plot(bsxfun(@plus,u,1:K))
 end
 
 
-function L = loss(x0,u,w,lambda)
-L = sum((x0 - reconstruct(u,w)).^2 + lambda*sum(u-u.^2,2));
+function L = loss(err,u,lambda)
+L = sum(err.^2 + lambda*sum((.3-u).^2,2));
 end
 
 
