@@ -43,7 +43,7 @@ useNewAlgorithm = true;
 for i=floor(epochStep/2)+round(startTime*fs):epochStep:size(signal,2)-epoch
     segment = signal(:,i+(1:epoch));
     if useNewAlgorithm
-        [u,w] = choo3(segment',ntrains,31);
+        [u,w] = choo3(segment',ntrains,71);
     else
         trains = processSegment(segment, ntrains, widths, margin);
     end
