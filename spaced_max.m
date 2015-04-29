@@ -1,4 +1,6 @@
 function idx = spaced_max(x, min_interval, thresh)
+% min_interval is the minimum distance between the tips of peaks
+
 peaks = local_max(x);
 if nargin>2
     peaks = peaks(x(peaks)>thresh);

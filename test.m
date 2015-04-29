@@ -10,14 +10,14 @@ signal = signal(channelsToUse,:);
 
 disp 'filtering...'
 % notch filter
-[b,a] = iirnotch(60/(fs/2),0.5/fs);
-signal = filtfilt(b,a,signal')';
+[b,a] = iirnotch(60/(fs/2),0.5/fs); % determie filter coefficients
+signal = filtfilt(b,a,signal')'; % apply filter
 
 % high-pass filter
 cutoff = 2; % Hz
-k = hamming(round(fs/cutoff)*2+1);
-k = k/sum(k);
-signal = signal - convmirr(signal',k)';
+k = hamming(round(fs/cutoff)*2+1); % hamming window
+k = k/sum(k); % normalize
+signal = signal - convmirr(signal',k)'; % filter
 
 if false   % change to true for plotting
     disp 'plotting raw data...'
@@ -37,7 +37,7 @@ ntrains = 4;
 
 
 for i=round(startTime*fs):epochStep:size(signal,2)-epoch
-    segment = signal(:,i+(1:epoch))';
+    segment = signal(:,i+(1:epoch))'; % segment is the raw data
     [w, u] = choo3(segment, ntrains, waveform_width);
     show_trains(segment, u, w);
 end
