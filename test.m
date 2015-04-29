@@ -1,4 +1,4 @@
-% demonstration of the 2007 version of the algorithm for Barret
+% demonstration of the waveform train decomposition
 
 disp 'reading EEG ...'
 filename = 'data/KT_7.edf';
@@ -19,25 +19,23 @@ k = hamming(round(fs/cutoff)*2+1); % hamming window
 k = k/sum(k); % normalize
 signal = signal - convmirr(signal',k)'; % filter
 
-if false   % change to true for plotting
-    disp 'plotting raw data...'
-    t = (0:size(signal,2)-1)/fs;
-    yticks = 1e4*(1:size(signal,1));
-    plot(t,bsxfun(@plus,signal',yticks))
-    set(gca,'YTick',yticks,'YTickLabel',arrayfun(@(i) strtrim(hdr.channelnames(i,:)),channelsToUse, 'uni', false))
-    xlabel 'time (s)'
-end
+disp 'plotting raw data...'
+t = (0:size(signal,2)-1)/fs;
+yticks = 1e4*(1:size(signal,1));
+plot(t,bsxfun(@plus,signal',yticks))
+set(gca,'YTick',yticks,'YTickLabel',arrayfun(@(i) strtrim(hdr.channelnames(i,:)),channelsToUse, 'uni', false))
+xlabel 'time (s)'
 
 % algorithm paramaters (all units are in samples)
 startTime =270; % (s)
-epoch = 1800;  % samples
-epochStep = 1000;
-waveform_width = 91;
-ntrains = 4;
+epoch = 2500;  % samples
+epochStep = 2000;
+waveform_width = 101;
+ntrains = 3;
 
 
 for i=round(startTime*fs):epochStep:size(signal,2)-epoch
     segment = signal(:,i+(1:epoch))'; % segment is the raw data
     [w, u] = choo3(segment, ntrains, waveform_width);
-    show_trains(segment, u, w);
+    show_trains(segment, u, w)
 end

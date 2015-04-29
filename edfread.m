@@ -1,4 +1,4 @@
-function signal = edfread( hdr, start_sample, nsamples )
+function signal = edfread(hdr, start_sample, nsamples)
 % simple EDF read
 % The segment to read is specified in samples:
 % 'start_sample' is zero-based index of the first sample
@@ -20,7 +20,7 @@ fseek(f,hdr.header_size+2*first*hdr.samples_per_frame*hdr.nchannels,'bof');
 signal = [];
 for i=first:last
     frame = fread(f,[hdr.samples_per_frame,hdr.nchannels],'int16')';
-    signal = [signal frame]; 
+    signal = [signal frame];  %#ok<AGROW>
 end
 fclose(f);
 
